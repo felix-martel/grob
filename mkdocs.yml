@@ -15,9 +15,9 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-            setup_commands:
-                - import sys
-                - sys.path.append('../')
+          setup_commands:
+            - import sys
+            - sys.path.append('../')
 theme:
   name: material
   feature:
@@ -54,6 +54,5 @@ markdown_extensions:
       generic: true
   - pymdownx.details
   - pymdownx.highlight:
-       use_pygments: true
+      use_pygments: true
   - pymdownx.superfences
-
