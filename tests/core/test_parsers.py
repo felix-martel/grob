@@ -1,6 +1,6 @@
 import pytest
 
-from grob.core.path_parser import PathParser
+from grob.core.parsers import PatternParser
 
 
 @pytest.mark.parametrize(
@@ -34,7 +34,7 @@ from grob.core.path_parser import PathParser
     ],
 )
 def test_path_parser(pattern, path, expected_result):
-    parser = PathParser(pattern)
+    parser = PatternParser(pattern)
     assert parser(path) == expected_result
 
 
@@ -55,5 +55,5 @@ def test_path_parser(pattern, path, expected_result):
     ],
 )
 def test_path_parser_key_parts(pattern, expected_parts):
-    parser = PathParser(pattern)
+    parser = PatternParser(pattern)
     assert parser.key_parts == expected_parts
