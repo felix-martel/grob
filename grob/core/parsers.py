@@ -1,12 +1,13 @@
 import re
 from pathlib import Path
-from typing import Callable, Dict, List, Match, Optional, Pattern, Protocol, TypeAlias, Union, cast
+from typing import Any, Callable, Dict, List, Match, Optional, Pattern, Protocol, TypeAlias, Union, cast
 
 from grob.core.frozendict import frozendict
 from grob.types import GroupKey, KeyPart
 
 # TODO: replace this by a protocol (a union of `Mapping` and `Hashable`)
 MultiPartKey: TypeAlias = frozendict[KeyPart, str]
+REGEX_FLAG: str = "!r"
 
 
 class SinglePartParserProtocol(Protocol):
@@ -51,6 +52,11 @@ class CallableMultiPartParser:
     def __call__(self, path: Path) -> Optional[Dict[KeyPart, str]]:
         return cast(Optional[Dict[KeyPart, str]], self.func(path))
 
+    def __eq__(self, other: Any) -> bool:
+        return all(
+            [isinstance(other, CallableMultiPartParser), self.func == other.func, self.key_parts == other.key_parts]
+        )
+
 
 class CallableParser:
     def __init__(self, func: Callable[[Path], Optional[str]]) -> None:
@@ -60,12 +66,18 @@ class CallableParser:
         key = self.func(path)
         return GroupKey(key) if key is not None else None
 
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, CallableParser) and self.func == other.func
+
 
 class PatternParser:
     def __init__(self, pattern: Union[str, Pattern]) -> None:
         if isinstance(pattern, re.Pattern):
             self.pattern = None
             self.regex = pattern
+        elif pattern.endswith(REGEX_FLAG):
+            self.pattern = None
+            self.regex = re.compile(pattern.removesuffix(REGEX_FLAG))
         else:
             self.pattern = pattern
             self.regex = _convert_pattern_to_regex(pattern)
@@ -73,6 +85,9 @@ class PatternParser:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}('{self.pattern or self.regex}')"
+
+    def __eq__(self, other: Any) -> bool:
+        return isinstance(other, PatternParser) and self.regex == other.regex
 
     def __call__(self, path: Path) -> Optional[Dict[KeyPart, str]]:
         matches = self.regex.search(str(path))
