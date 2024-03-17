@@ -1,2 +1,0 @@
-class GrobError(Exception):
-    pass

@@ -1,4 +1,3 @@
-import abc
 import dataclasses
 import re
 from typing import Any, Callable, Dict, Iterable, List, Union
@@ -10,7 +9,7 @@ DEFAULT_TAG_NAME = TagName("default")
 
 
 @dataclasses.dataclass
-class Tag(abc.ABC):
+class Tag:
     name: TagName
     parser: parsers.Parser
     on_missing: OnMissing = OnMissing.fail
