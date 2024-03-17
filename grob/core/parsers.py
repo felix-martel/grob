@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Match, Optional, Pattern, Protocol, TypeAlias, Union, cast
+from typing import Any, Callable, Dict, List, Match, Optional, Pattern, Protocol, TypeAlias, Union
 
 from grob.core.frozendict import frozendict
 from grob.types import GroupKey, KeyPart
@@ -49,8 +49,11 @@ class CallableMultiPartParser:
         self.func = func
         self.key_parts = [KeyPart(key_part) for key_part in key_parts]
 
-    def __call__(self, path: Path) -> Optional[Dict[KeyPart, str]]:
-        return cast(Optional[Dict[KeyPart, str]], self.func(path))
+    def __call__(self, path: Path) -> Optional[MultiPartKey]:
+        key = self.func(path)
+        if key is None:
+            return None
+        return frozendict(key)
 
     def __eq__(self, other: Any) -> bool:
         return all(
@@ -89,11 +92,11 @@ class PatternParser:
     def __eq__(self, other: Any) -> bool:
         return isinstance(other, PatternParser) and self.regex == other.regex
 
-    def __call__(self, path: Path) -> Optional[Dict[KeyPart, str]]:
+    def __call__(self, path: Path) -> Optional[MultiPartKey]:
         matches = self.regex.search(str(path))
         if not matches:
             return None
-        return {KeyPart(key): value for key, value in matches.groupdict().items() if value is not None}
+        return frozendict({KeyPart(key): value for key, value in matches.groupdict().items() if value is not None})
 
 
 def _create_named_capturing_group(match_obj: Match) -> str:

@@ -26,7 +26,7 @@ class frozendict(dict, Generic[_KT, _VT]):
                 )
 
     def __hash__(self) -> int:  # type: ignore[override]
-        return hash(tuple(self.items()))
+        return hash(tuple(sorted(self.items())))
 
     __delitem__ = _not_available("__delitem__")
     __setitem__ = _not_available("__setitem__")

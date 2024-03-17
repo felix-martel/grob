@@ -3,17 +3,7 @@ import dataclasses
 import re
 from typing import Any, Callable, Dict, Iterable, List, Union
 
-from grob import types
-from grob.core.key_formatter import FstringFormatter
-from grob.core.parsers import (
-    CallableMultiPartParser,
-    CallableParser,
-    MultiPartKey,
-    MultiPartParserProtocol,
-    Parser,
-    PatternParser,
-    SinglePartParserProtocol,
-)
+from grob.core import parsers
 from grob.types import GroupKey, KeyPart, OnMissing, TagName, TagSpec
 
 DEFAULT_TAG_NAME = TagName("default")
@@ -22,55 +12,60 @@ DEFAULT_TAG_NAME = TagName("default")
 @dataclasses.dataclass
 class Tag(abc.ABC):
     name: TagName
-    parser: Parser
-    on_missing: types.OnMissing
-    allow_multiple: bool
+    parser: parsers.Parser
+    on_missing: OnMissing = OnMissing.fail
+    allow_multiple: bool = False
 
 
 @dataclasses.dataclass
 class MultiPartTag(Tag):
-    parser: MultiPartParserProtocol
-    key_formatter: Callable[[MultiPartKey], GroupKey]
+    parser: parsers.MultiPartParserProtocol = None
+
+    # This is an awful hack to allow default values on the parent class `Tag`. This won't be needed once we stop
+    # supporting Python <3.10, since 3.10 introduces a `kw_only` argument
+    def __post_init__(self):
+        if self.parser is None:
+            # TODO: error message
+            raise ValueError(self)
 
 
 @dataclasses.dataclass
-class DistributableTag(Tag):
-    parser: MultiPartParserProtocol
-    key_formatter: Callable[[MultiPartKey], GroupKey]
-    distribute_over: List[KeyPart]
+class DistributableTag(MultiPartTag):
+    distribute_over: List[KeyPart] = None
+
+    def __post_init__(self):
+        if self.distribute_over is None:
+            raise ValueError(self)
 
 
 @dataclasses.dataclass
 class SinglePartTag(Tag):
-    parser: SinglePartParserProtocol
+    parser: parsers.SinglePartParserProtocol = None
+
+    def __post_init__(self):
+        if self.parser is None:
+            raise ValueError(self)
 
 
 def create_tags(
     raw_specs: Union[TagSpec, Dict[str, TagSpec]],
-    key_formatter: Union[str, Callable[[MultiPartKey], GroupKey], None] = None,
+    key_formatter: Union[str, Callable[[parsers.MultiPartKey], GroupKey], None] = None,
 ) -> List[Tag]:
     specs = _normalize_spec(raw_specs)
     # Use a dict to preserve insertion order
     all_key_parts = list(
         {key_part: None for spec in specs.values() for key_part in getattr(spec["parser"], "key_parts", [])}
     )
-    if key_formatter is None:
-        key_formatter = FstringFormatter.from_parts(all_key_parts)
-    elif isinstance(key_formatter, str):
-        key_formatter = FstringFormatter(key_formatter)
-    return [
-        create_tag(name, **spec, key_formatter=key_formatter, all_key_parts=all_key_parts)
-        for name, spec in specs.items()
-    ]
+    tags = [create_tag(name, **spec, all_key_parts=all_key_parts) for name, spec in specs.items()]
+    return tags
 
 
 def create_tag(
     name: str,
-    parser: Parser,
+    parser: parsers.Parser,
     all_key_parts: List[KeyPart],
-    key_formatter: Callable[[MultiPartKey], GroupKey],
     allow_multiple: bool = False,
-    on_missing: types.OnMissing = types.OnMissing.fail,
+    on_missing: OnMissing = OnMissing.fail,
     distribute: bool = False,
     distribute_over: Iterable[str] = (),
 ) -> Tag:
@@ -80,10 +75,10 @@ def create_tag(
         "on_missing": on_missing,
         "allow_multiple": allow_multiple,
     }
-    if isinstance(parser, CallableParser):
+    if isinstance(parser, parsers.CallableParser):
         return SinglePartTag(**common_arguments)
     elif (missing_key_parts := set(all_key_parts) - set(parser.key_parts)) or distribute:
-        if not isinstance(parser, (PatternParser, CallableMultiPartParser)):
+        if not isinstance(parser, (parsers.PatternParser, parsers.CallableMultiPartParser)):
             # TODO: error message
             raise TypeError(parser)
         if not distribute_over:
@@ -91,11 +86,10 @@ def create_tag(
             distribute_over = missing_key_parts
         return DistributableTag(
             **common_arguments,
-            key_formatter=key_formatter,
             distribute_over=list(distribute_over),
         )
     else:
-        return MultiPartTag(**common_arguments, key_formatter=key_formatter)
+        return MultiPartTag(**common_arguments)
 
 
 def _normalize_spec(spec: Union[TagSpec, Dict[str, TagSpec]]) -> Dict[TagName, Dict[str, Any]]:
@@ -114,14 +108,14 @@ def _normalize_spec(spec: Union[TagSpec, Dict[str, TagSpec]]) -> Dict[TagName, D
             raise ValueError(raw_tag_spec)
         parser_spec = raw_tag_spec.pop("spec")
         if isinstance(parser_spec, (str, re.Pattern)):
-            parser = PatternParser(parser_spec)
+            parser = parsers.PatternParser(parser_spec)
         elif not callable(parser_spec):
             # TODO: error message
             raise TypeError(parser_spec)
         elif (key_parts := raw_tag_spec.pop("key_parts", None)) is not None:
-            parser = CallableMultiPartParser(parser_spec, key_parts=key_parts)
+            parser = parsers.CallableMultiPartParser(parser_spec, key_parts=key_parts)
         else:
-            parser = CallableParser(parser_spec)
+            parser = parsers.CallableParser(parser_spec)
         if "on_missing" in raw_tag_spec:
             raw_tag_spec["on_missing"] = OnMissing(raw_tag_spec["on_missing"])
         normalized_spec[TagName(raw_tag_name)] = {"parser": parser, **raw_tag_spec}
