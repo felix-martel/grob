@@ -61,6 +61,16 @@ class CallableMultiPartParser:
         )
 
 
+class AnonymousParser(CallableMultiPartParser):
+    DEFAULT_PART_NAME: KeyPart = KeyPart("path")
+
+    def __init__(self, regex: Pattern) -> None:
+        super().__init__(
+            func=lambda path: {"path": path.as_posix()} if regex.search(str(path)) else None,
+            key_parts=[self.DEFAULT_PART_NAME],
+        )
+
+
 class CallableParser:
     def __init__(self, func: Callable[[Path], Optional[str]]) -> None:
         self.func = func

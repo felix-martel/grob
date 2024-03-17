@@ -64,7 +64,7 @@ from grob.cli.app import create_parser
         (". . --remove-on-missing yes", {"remove_on_missing": True}),
         (". . --remove-on-missing 1", {"remove_on_missing": True}),
         (". . --remove-on-missing true", {"remove_on_missing": True}),
-        (". .", {"with_keys": True}),
+        (". .", {"with_keys": None}),
         (". . --with-keys", {"with_keys": True}),
         (". . -k", {"with_keys": True}),
         (". . --without-keys", {"with_keys": False}),
@@ -76,7 +76,7 @@ from grob.cli.app import create_parser
         (". .", {"use_relative_path": False}),
     ],
 )
-def test_foo(args, attrs):
+def test_create_parser(args, attrs):
     parser = create_parser()
     args = parser(args.split())
     for attr, expected_value in attrs.items():

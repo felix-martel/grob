@@ -94,25 +94,40 @@ def _normalize_spec(spec: Union[TagSpec, Dict[str, TagSpec]]) -> Dict[TagName, D
         spec = {DEFAULT_TAG_NAME: spec}
     normalized_spec = {}
     for raw_tag_name, raw_tag_spec in spec.items():
-        if isinstance(raw_tag_spec, (str, re.Pattern)) or callable(raw_tag_spec):
-            raw_tag_spec = {"spec": raw_tag_spec}
-        elif not isinstance(raw_tag_spec, dict):
-            # TODO: error message
-            raise TypeError(raw_tag_spec)
-        elif "spec" not in raw_tag_spec:
-            # TODO: error message
-            raise ValueError(raw_tag_spec)
-        parser_spec = raw_tag_spec.pop("spec")
-        if isinstance(parser_spec, (str, re.Pattern)):
-            parser = parsers.PatternParser(parser_spec)
-        elif not callable(parser_spec):
-            # TODO: error message
-            raise TypeError(parser_spec)
-        elif (key_parts := raw_tag_spec.pop("key_parts", None)) is not None:
-            parser = parsers.CallableMultiPartParser(parser_spec, key_parts=key_parts)
-        else:
-            parser = parsers.CallableParser(parser_spec)
+        raw_tag_spec = _convert_raw_spec_to_dict(raw_tag_spec)
+        parser = _create_parser_from_spec(raw_tag_spec)
+        if isinstance(parser, parsers.PatternParser) and len(parser.key_parts) == 0 and len(spec) == 1:
+            # This is a very special case: when a single tag is declared, and this tag uses pattern, and this pattern
+            # has no named part, we convert it to a special callable parser that uses the full path as pattern. This
+            # allows simple, single-tag specs with only wildcards and no placeholders
+            parser = parsers.AnonymousParser(regex=parser.regex)
         if "on_missing" in raw_tag_spec:
             raw_tag_spec["on_missing"] = OnMissing(raw_tag_spec["on_missing"])
         normalized_spec[TagName(raw_tag_name)] = {"parser": parser, **raw_tag_spec}
     return normalized_spec
+
+
+def _create_parser_from_spec(raw_tag_spec: Dict[str, Any]) -> parsers.Parser:
+    parser_spec = raw_tag_spec.pop("spec")
+    if isinstance(parser_spec, (str, re.Pattern)):
+        parser = parsers.PatternParser(parser_spec)
+    elif not callable(parser_spec):
+        # TODO: error message
+        raise TypeError(parser_spec)
+    elif (key_parts := raw_tag_spec.pop("key_parts", None)) is not None:
+        parser = parsers.CallableMultiPartParser(parser_spec, key_parts=key_parts)
+    else:
+        parser = parsers.CallableParser(parser_spec)
+    return parser
+
+
+def _convert_raw_spec_to_dict(raw_tag_spec: TagSpec) -> Dict[str, Any]:
+    if isinstance(raw_tag_spec, (str, re.Pattern)) or callable(raw_tag_spec):
+        raw_tag_spec = {"spec": raw_tag_spec}
+    elif not isinstance(raw_tag_spec, dict):
+        # TODO: error message
+        raise TypeError(raw_tag_spec)
+    elif "spec" not in raw_tag_spec:
+        # TODO: error message
+        raise ValueError(raw_tag_spec)
+    return raw_tag_spec

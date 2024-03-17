@@ -210,7 +210,6 @@ def create_parser() -> Callable[..., argparse.Namespace]:
         "-k",
         action="store_true",
         dest="with_keys",
-        default=True,
         help="Return group keys alongside the group themselves. This is the default.",
     )
     output_key.add_argument(
@@ -221,7 +220,7 @@ def create_parser() -> Callable[..., argparse.Namespace]:
         help="Return only the file groups, not their keys.",
     )
     parser.add_argument("--help", action="help", help="Show this help message and exit")
-    parser.set_defaults(output_path_anchor="root")
+    parser.set_defaults(with_keys=None)
 
     def parse_arguments(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
         parsed_args = parser.parse_args(args=args)
@@ -279,6 +278,7 @@ def main() -> None:
         squeeze=args.squeeze,
         use_relative_paths=args.use_relative_path,
         with_keys=args.with_keys,
+        compress_to_list=args.compress_to_list,
     )
     write_groups(groups, stream=args.output, output_format=args.output_format, tag_names=list(tag_specs))
 
