@@ -3,7 +3,7 @@ import json
 from functools import partial
 from itertools import zip_longest
 from pathlib import Path
-from typing import Any, Iterable, List, Literal, Protocol, TextIO, Union
+from typing import Any, Callable, Dict, Iterable, List, Literal, Protocol, TextIO, Union, no_type_check
 
 from grob.core.output_formatters import FormattedGroups
 from grob.types import TagName
@@ -23,7 +23,7 @@ def write_groups(
 
 
 class _PathJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
+    def default(self, obj: Any) -> Any:
         if isinstance(obj, Path):
             return obj.as_posix()
         return super().default(obj)
@@ -34,8 +34,10 @@ def _has_keys(groups: FormattedGroups) -> bool:
 
 
 def _is_squeezed(groups: FormattedGroups) -> bool:
-    is_squeezed_list = isinstance(groups, list) and groups and not isinstance(groups[0], dict)
-    is_squeezed_dict = isinstance(groups, dict) and groups and not isinstance(next(iter(groups.values())), dict)
+    is_squeezed_list = isinstance(groups, list) and len(groups) > 0 and not isinstance(groups[0], dict)
+    is_squeezed_dict = (
+        isinstance(groups, dict) and len(groups) > 0 and not isinstance(next(iter(groups.values())), dict)
+    )
     return is_squeezed_dict or is_squeezed_list
 
 
@@ -44,10 +46,10 @@ class OutputFormatter(Protocol):
         self,
         groups: FormattedGroups,
         stream: TextIO,
-        tag_names: List[str],
+        tag_names: List[TagName],
         squeezed: bool = False,
         with_keys: bool = True,
-    ):
+    ) -> None:
         pass
 
 
@@ -56,7 +58,7 @@ class JsonOutputFormatter:
         self,
         groups: FormattedGroups,
         stream: TextIO,
-        tag_names: List[str],
+        tag_names: List[TagName],
         squeezed: bool = False,
         with_keys: bool = True,
     ) -> None:
@@ -68,7 +70,7 @@ class JsonlOutputFormatter:
         self,
         groups: FormattedGroups,
         stream: TextIO,
-        tag_names: List[str],
+        tag_names: List[TagName],
         squeezed: bool = False,
         with_keys: bool = True,
     ) -> None:
@@ -78,7 +80,7 @@ class JsonlOutputFormatter:
     @staticmethod
     def _iter_records(groups: FormattedGroups, squeezed: bool, with_keys: bool) -> Iterable[Any]:
         if with_keys:
-            for key, group in groups.items():
+            for key, group in groups.items():  # type: ignore[union-attr]
                 if squeezed:
                     yield {"key": key, "file": group}
                 else:
@@ -96,7 +98,7 @@ class TableOutputFormatter:
         self,
         groups: FormattedGroups,
         stream: TextIO,
-        tag_names: List[str],
+        tag_names: List[TagName],
         squeezed: bool = False,
         with_keys: bool = True,
     ) -> None:
@@ -104,15 +106,17 @@ class TableOutputFormatter:
         for row in self._iter_rows(groups, squeezed=squeezed, with_keys=with_keys, tag_names=tag_names):
             writer.writerow(row)
 
+    # Properly annotating the function below would either require overloading, as the format of groups and the values of
+    # `squeezed` and `with_keys` are linked, or defining a custom `TypeGuard`.
+    @no_type_check
     def _iter_rows(
-        self, groups: FormattedGroups, tag_names: List[str], squeezed: bool, with_keys: bool
+        self, groups: FormattedGroups, tag_names: List[TagName], squeezed: bool, with_keys: bool
     ) -> Iterable[List[str]]:
         # Don't yield header when output is squeezed to a single column and no keys are displayed
         if not squeezed or with_keys:
             header = ["files"] if squeezed else tag_names
             if with_keys:
                 header = ["key", *header]
-
             yield header
 
         for key, group in groups.items() if with_keys else zip_longest([], groups):
@@ -129,18 +133,19 @@ class TableOutputFormatter:
         return ", ".join(formatted_paths)
 
 
-class HumanOutputFormatter(TableOutputFormatter):
+class HumanOutputFormatter:
     def __call__(
         self,
         groups: FormattedGroups,
         stream: TextIO,
-        tag_names: List[str],
+        tag_names: List[TagName],
         squeezed: bool = False,
         with_keys: bool = True,
     ) -> None:
         raise NotImplementedError()
 
 
+_FORMATTERS: Dict[Literal["human", "json", "jsonl", "csv", "tsv"], Callable[[], OutputFormatter]]
 _FORMATTERS = {
     "human": HumanOutputFormatter,
     "json": JsonOutputFormatter,

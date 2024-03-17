@@ -5,7 +5,7 @@ from typing import Callable, Dict, Iterable, List, Tuple, Union
 from grob.core.frozendict import frozendict
 from grob.core.parsers import MultiPartKey
 from grob.core.tags import DistributableTag, MultiPartTag, Tag
-from grob.types import Group, GroupKey
+from grob.types import Group, GroupKey, KeyPart
 
 
 @dataclasses.dataclass
@@ -18,7 +18,8 @@ class FileCollection:
         if key is None:
             return False
         if self.tag.allow_multiple:
-            self.files.setdefault(key, []).append(file)
+            # Typing this properly would require overloading (values are lists if `allow_multiple`, paths otherwise)
+            self.files.setdefault(key, []).append(file)  # type: ignore[union-attr]
         elif key not in self.files:
             self.files[key] = file
         else:
@@ -65,20 +66,24 @@ def group_by_key(
     multi_part_collections, distributable_collections, single_part_collections = _sort_collections_by_type(
         file_collections
     )
-    groups = {}
+    groups: Dict[MultiPartKey, Group] = {}
     for collection in multi_part_collections:
         for key, path in collection.files.items():
-            groups.setdefault(key, {})[collection.tag.name] = path
+            groups.setdefault(key, {})[collection.tag.name] = path  # type: ignore[arg-type]
     for collection in distributable_collections:
         for key, group in groups.items():
-            join_key = frozendict({part: key[part] for part in key.keys() - set(collection.tag.distribute_over)})
-            path = collection.files.get(join_key)
-            if path is not None:
-                group[collection.tag.name] = path
+            join_key: frozendict[KeyPart, str] = frozendict(
+                {
+                    part: key[part]
+                    for part in key.keys() - set(collection.tag.distribute_over)  # type: ignore[attr-defined]
+                }
+            )
+            if join_key in collection.files:
+                group[collection.tag.name] = collection.files[join_key]
     formatted_groups = {key_formatter(key_parts): group for key_parts, group in groups.items()}
     for collection in single_part_collections:
         for key, path in collection.files.items():
-            formatted_groups.setdefault(key, {})[collection.tag.name] = path
+            formatted_groups.setdefault(key, {})[collection.tag.name] = path  # type: ignore[arg-type]
     return formatted_groups
 
 
@@ -100,6 +105,7 @@ def _sort_collections_by_type(
         else:
             single_part_collections.append(collection)
     distributable_collections = sorted(
-        distributable_collections, key=lambda collection: len(collection.tag.parser.key_parts)
+        distributable_collections,
+        key=lambda collection: len(collection.tag.parser.key_parts),  # type: ignore[union-attr]
     )
     return multi_part_collections, distributable_collections, single_part_collections

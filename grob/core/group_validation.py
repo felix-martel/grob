@@ -6,11 +6,13 @@ from grob.types import Group, GroupKey, OnMissing
 
 
 def filter_and_validate_groups(groups: Dict[GroupKey, Group], tags: List[Tag]) -> Dict[GroupKey, Group]:
-    filtered_groups = {}
+    filtered_groups: Dict[GroupKey, Group] = {}
     all_tags = {tag.name for tag in tags}
     optional_tags = {tag.name for tag in tags if tag.on_missing == OnMissing.ignore}
     mandatory_tags = {tag.name for tag in tags if tag.on_missing == OnMissing.fail}
-    default_group = {tag.name: [] if tag.allow_multiple else None for tag in tags if tag.on_missing == OnMissing.ignore}
+    default_group: Group = {
+        tag.name: [] if tag.allow_multiple else None for tag in tags if tag.on_missing == OnMissing.ignore
+    }
 
     # TODO: add a mode where all groups are processed (e.g. to display all invalid groups at once)
     #  could be useful for a --dry-run option
@@ -23,5 +25,4 @@ def filter_and_validate_groups(groups: Dict[GroupKey, Group], tags: List[Tag]) -
         else:
             # Remove the group from the outputs
             continue
-
     return filtered_groups

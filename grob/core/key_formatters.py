@@ -24,7 +24,7 @@ class FstringFormatter:
 
     @classmethod
     def from_parts(cls, key_parts: List[KeyPart], sep: str = "_") -> Self:
-        return FstringFormatter(sep.join("{" + key_part + "}" for key_part in key_parts))
+        return cls(sep.join("{" + key_part + "}" for key_part in key_parts))
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.format_string!r})"

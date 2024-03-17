@@ -17,11 +17,11 @@ import argparse
 import os
 import sys
 from pathlib import Path
-from typing import Callable, List, Optional, Sequence, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from grob.core.finder import find
 from grob.core.output_writers import write_groups
-from grob.types import OnMissing
+from grob.types import OnMissing, TagName
 
 _TRUEISH_KEYWORDS = {"true", "yes", "all", "1"}
 _FALSEISH_KEYWORDS = {"false", "no", "0", "none"}
@@ -233,19 +233,19 @@ def create_parser() -> Callable[..., argparse.Namespace]:
     return parse_arguments
 
 
-def prepare_args(args: argparse.Namespace):
-    tag_specs = {}
+def prepare_args(args: argparse.Namespace) -> Dict[TagName, Dict[str, Any]]:
+    tag_specs: Dict[TagName, Dict[str, Any]] = {}
     unnamed_tags = 0
     for raw_tag_spec in args.spec.split(","):
         raw_tag_spec = raw_tag_spec.strip()
         if "=" not in raw_tag_spec:
             unnamed_tags += 1
-            tag_name = f"tag_{unnamed_tags}"
+            tag_name = TagName(f"tag_{unnamed_tags}")
             tag_spec = raw_tag_spec
         else:
-            tag_name, tag_spec = raw_tag_spec.split("=")
+            raw_tag_name, tag_spec = raw_tag_spec.split("=")
+            tag_name = TagName(raw_tag_name.strip())
             tag_spec = tag_spec.strip()
-            tag_name = tag_name.strip()
         tag_specs[tag_name] = {"spec": tag_spec}
     if isinstance(args.multiple_allowed, bool):
         for tag_spec in tag_specs.values():
@@ -272,7 +272,7 @@ def main() -> None:
     args = arg_parser()
     tag_specs = prepare_args(args)
     groups = find(
-        specs=tag_specs,
+        specs=tag_specs,  # type: ignore[arg-type]
         root_dir=args.root_dir,
         key_formatter=args.key_formatter,
         squeeze=args.squeeze,
