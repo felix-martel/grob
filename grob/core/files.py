@@ -5,7 +5,7 @@ from typing import Callable, Dict, Iterable, List, Tuple, Union
 from grob.core.frozendict import frozendict
 from grob.core.parsers import MultiPartKey
 from grob.core.tags import DistributableTag, MultiPartTag, Tag
-from grob.types import GroupKey, TagName
+from grob.types import Group, GroupKey
 
 
 @dataclasses.dataclass
@@ -50,7 +50,7 @@ def find_by_tag(files: Iterable[Path], tags: List[Tag]) -> List[FileCollection]:
 
 def group_by_key(
     file_collections: List[FileCollection], key_formatter: Callable[[MultiPartKey], GroupKey]
-) -> Dict[GroupKey, Dict[TagName, Union[Path, List[Path]]]]:
+) -> Dict[GroupKey, Group]:
     """Group files from different collections by common key.
 
     Args:
