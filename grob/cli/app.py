@@ -15,8 +15,13 @@ describes where to find the files and how to extract a key from their paths.
 
 import argparse
 import os
+import sys
 from pathlib import Path
 from typing import Callable, List, Optional, Sequence, Union
+
+from grob.core.finder import find
+from grob.core.output_writers import write_groups
+from grob.types import OnMissing
 
 _TRUEISH_KEYWORDS = {"true", "yes", "all", "1"}
 _FALSEISH_KEYWORDS = {"false", "no", "0", "none"}
@@ -101,7 +106,7 @@ def create_parser() -> Callable[..., argparse.Namespace]:
     parser.add_argument(
         "--key",
         type=str,
-        dest="key_pattern",
+        dest="key_formatter",
         metavar="PATTERN",
         default=None,
         help=(
@@ -109,6 +114,13 @@ def create_parser() -> Callable[..., argparse.Namespace]:
             "contained in PATTERN: for example, if PATTERN is '**/{parent}/{name}.{ext}', --key could be "
             "'{parent}-{name}-{ext}'."
         ),
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        help="Where to write the output. Default to stdout.",
     )
     output_options = parser.add_argument_group(
         title="Output format", description="Controls how the output is formatted."
@@ -181,25 +193,16 @@ def create_parser() -> Callable[..., argparse.Namespace]:
     )
     output_path_type = output_options.add_mutually_exclusive_group()
     output_path_type.add_argument(
+        "--relative",
+        action="store_true",
+        dest="use_relative_path",
+        help="Output paths relative to ROOT_DIR.",
+    )
+    output_path_type.add_argument(
         "--absolute",
-        action="store_const",
-        const="absolute",
-        dest="output_path_anchor",
+        action="store_false",
+        dest="use_relative_path",
         help="Output absolute paths.",
-    )
-    output_path_type.add_argument(
-        "--relative-to-cwd",
-        action="store_const",
-        const="cwd",
-        dest="output_path_anchor",
-        help="Output paths relative to current working directory.",
-    )
-    output_path_type.add_argument(
-        "--relative-to-root",
-        action="store_const",
-        const="root",
-        dest="output_path_anchor",
-        help="Output paths relative to ROOT_DIR. This is the default.",
     )
     output_key = output_options.add_mutually_exclusive_group()
     output_key.add_argument(
@@ -231,10 +234,53 @@ def create_parser() -> Callable[..., argparse.Namespace]:
     return parse_arguments
 
 
+def prepare_args(args: argparse.Namespace):
+    tag_specs = {}
+    unnamed_tags = 0
+    for raw_tag_spec in args.spec.split(","):
+        raw_tag_spec = raw_tag_spec.strip()
+        if "=" not in raw_tag_spec:
+            unnamed_tags += 1
+            tag_name = f"tag_{unnamed_tags}"
+            tag_spec = raw_tag_spec
+        else:
+            tag_name, tag_spec = raw_tag_spec.split("=")
+            tag_spec = tag_spec.strip()
+            tag_name = tag_name.strip()
+        tag_specs[tag_name] = {"spec": tag_spec}
+    if isinstance(args.multiple_allowed, bool):
+        for tag_spec in tag_specs.values():
+            tag_spec["allow_multiple"] = args.multiple_allowed
+    else:
+        for tag_name in args.multiple_allowed:
+            tag_specs[tag_name]["allow_multiple"] = True
+    for attr, value in [
+        ("optional_tags", OnMissing.ignore),
+        ("remove_on_missing", OnMissing.skip),
+        ("fail_on_missing", OnMissing.fail),
+    ]:
+        # TODO: validate these, right now the behavior is quite fragile
+        attr_value = getattr(args, attr)
+        if not attr_value:
+            continue
+        for tag_name in tag_specs if attr_value is True else attr_value:
+            tag_specs[tag_name]["on_missing"] = value
+    return tag_specs
+
+
 def main() -> None:
     arg_parser = create_parser()
     args = arg_parser()
-    print(*(f"{k}={v}" for k, v in args.__dict__.items() if not k.startswith("_")))
+    tag_specs = prepare_args(args)
+    groups = find(
+        specs=tag_specs,
+        root_dir=args.root_dir,
+        key_formatter=args.key_formatter,
+        squeeze=args.squeeze,
+        use_relative_paths=args.use_relative_path,
+        with_keys=args.with_keys,
+    )
+    write_groups(groups, stream=args.output, output_format=args.output_format, tag_names=list(tag_specs))
 
 
 if __name__ == "__main__":

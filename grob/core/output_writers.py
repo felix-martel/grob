@@ -60,7 +60,7 @@ class JsonOutputFormatter:
         squeezed: bool = False,
         with_keys: bool = True,
     ) -> None:
-        json.dump(groups, stream, cls=_PathJSONEncoder)
+        json.dump(groups, stream, cls=_PathJSONEncoder, indent=2 if stream.isatty() else None)
 
 
 class JsonlOutputFormatter:

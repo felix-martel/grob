@@ -1,9 +1,9 @@
 import dataclasses
 import re
-from typing import Any, Callable, Dict, Iterable, List, Union
+from typing import Any, Dict, Iterable, List, Union
 
 from grob.core import parsers
-from grob.types import GroupKey, KeyPart, OnMissing, TagName, TagSpec
+from grob.types import KeyPart, OnMissing, TagName, TagSpec
 
 DEFAULT_TAG_NAME = TagName("default")
 
@@ -46,10 +46,7 @@ class SinglePartTag(Tag):
             raise ValueError(self)
 
 
-def create_tags(
-    raw_specs: Union[TagSpec, Dict[str, TagSpec]],
-    key_formatter: Union[str, Callable[[parsers.MultiPartKey], GroupKey], None] = None,
-) -> List[Tag]:
+def create_tags(raw_specs: Union[TagSpec, Dict[str, TagSpec]]) -> List[Tag]:
     specs = _normalize_spec(raw_specs)
     # Use a dict to preserve insertion order
     all_key_parts = list(

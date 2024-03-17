@@ -1,12 +1,12 @@
 import re
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Match, Optional, Pattern, Protocol, TypeAlias, Union
+from typing import Any, Callable, Dict, List, Match, Optional, Pattern, Protocol, Union
 
 from grob.core.frozendict import frozendict
 from grob.types import GroupKey, KeyPart
 
 # TODO: replace this by a protocol (a union of `Mapping` and `Hashable`)
-MultiPartKey: TypeAlias = frozendict[KeyPart, str]
+MultiPartKey = frozendict[KeyPart, str]
 REGEX_FLAG: str = "!r"
 
 
@@ -41,7 +41,7 @@ class MultiPartParserProtocol(Protocol):
         pass
 
 
-Parser: TypeAlias = Union[MultiPartParserProtocol, SinglePartParserProtocol]
+Parser = Union[MultiPartParserProtocol, SinglePartParserProtocol]
 
 
 class CallableMultiPartParser:

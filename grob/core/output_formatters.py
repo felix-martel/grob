@@ -1,11 +1,11 @@
 from pathlib import Path
-from typing import Dict, List, Optional, TypeAlias, Union
+from typing import Dict, List, Optional, Union
 
 from grob.types import Group, GroupKey, TagName
 
-SqueezedGroup: TypeAlias = Optional[str]
-FormattedGroup: TypeAlias = Union[Group, SqueezedGroup]
-FormattedGroups: TypeAlias = Union[List[FormattedGroup], Dict[GroupKey, FormattedGroup]]
+SqueezedGroup = Optional[str]
+FormattedGroup = Union[Group, SqueezedGroup]
+FormattedGroups = Union[List[FormattedGroup], Dict[GroupKey, FormattedGroup]]
 
 
 def format_groups(

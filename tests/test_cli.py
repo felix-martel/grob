@@ -69,12 +69,11 @@ from grob.cli.app import create_parser
         (". . -k", {"with_keys": True}),
         (". . --without-keys", {"with_keys": False}),
         (". . -K", {"with_keys": False}),
-        (". . --key foo_{bar}_{index}", {"key_pattern": "foo_{bar}_{index}"}),
-        (". .", {"key_pattern": None}),
-        (". . --absolute", {"output_path_anchor": "absolute"}),
-        (". . --relative-to-cwd", {"output_path_anchor": "cwd"}),
-        (". . --relative-to-root", {"output_path_anchor": "root"}),
-        (". .", {"output_path_anchor": "root"}),
+        (". . --key foo_{bar}_{index}", {"key_formatter": "foo_{bar}_{index}"}),
+        (". .", {"key_formatter": None}),
+        (". . --absolute", {"use_relative_path": False}),
+        (". . --relative", {"use_relative_path": True}),
+        (". .", {"use_relative_path": False}),
     ],
 )
 def test_foo(args, attrs):
