@@ -9,7 +9,8 @@ copyright: Maintained by <a href="https://felix-martel.com">Florian</a>.
 
 nav:
   - Home: index.md
-  - Modules: modules.md
+  - CLI Reference: cli.md
+  - API Reference: modules.md
 plugins:
   - search
   - mkdocstrings:

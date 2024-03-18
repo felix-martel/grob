@@ -272,7 +272,7 @@ def main() -> None:
     args = arg_parser()
     tag_specs = prepare_args(args)
     groups = find(
-        specs=tag_specs,  # type: ignore[arg-type]
+        patterns=tag_specs,  # type: ignore[arg-type]
         root_dir=args.root_dir,
         key_formatter=args.key_formatter,
         squeeze=args.squeeze,

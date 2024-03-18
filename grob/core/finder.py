@@ -12,16 +12,56 @@ from grob.types import GroupKey, TagSpec
 
 
 def find(
-    specs: Union[TagSpec, Dict[str, TagSpec]],
+    patterns: Union[TagSpec, Dict[str, TagSpec]],
     root_dir: Path,
-    key_formatter: Union[str, Callable[[MultiPartKey], GroupKey], None],
+    key_formatter: Union[str, Callable[[MultiPartKey], GroupKey], None] = None,
     use_relative_paths: bool = False,
     squeeze: bool = True,
     with_keys: Optional[bool] = None,
     compress_to_list: bool = True,
 ) -> FormattedGroups:
+    """Find and group files together using glob-like patterns.
+
+    A single pattern will create a tag with a default name:
+    ```
+    "data/image_{index}.png"
+    ```
+    will create groups `{"001": {"default": "data/image_001.png"}, "002": {"default": "data/image_002.png"}...}`.
+
+    A dictionary will create one tag for each key in the dictionary. The values of the dictionary can be either a
+    pattern, or a dictionary specifying tag-specific options, e.g.:
+    ```
+    {
+        "image": "data/{year}/image_{index}.png",
+        "legend": {
+            "spec": "legends/legend_*_{year}_{index}.txt,
+            "allow_multiple": True,
+            "on_missing": "ignore",
+        }
+    }
+    ```
+    will create two tags `image` and `legend`, the latter being optional and accepting multiple files.
+
+    Args:
+        patterns: describes how to find and group files. It can be a single pattern (in which case a tag with a default
+            name will be created) or a mapping from tag names to patterns. For tag-specific options (i.e. indicate what
+            to do if a tag is missing from a group), a mapping from tag names to tag options can be provided
+        root_dir: where to look for files. `root_dir` will be walked recursively
+        key_formatter: specify how to format keys. By default, all key parts (such as `year` or `index` in the example
+            above) are concatenated with underscores. `key_formatter` can be either a f-string or a function that takes
+            a dictionary of parts (e.g. `{"year": 2020, "index": 1}`) and returns a string
+        use_relative_paths: if True, return paths relative to `root_dir`. Otherwise, return absolute paths
+        squeeze: if True, the output will be squeezed when possible (i.e. tag will be omitted from the output if it is
+            not ambiguous)
+        with_keys: whether to include the group keys in the output
+        compress_to_list: if True, the value of `with_keys` will be automatically set from `patterns`. Ignored if
+            `with_keys` is passed
+
+    Returns:
+        files matching `patterns`, grouped by common keys and tags
+    """
     root_dir = root_dir.resolve()
-    tags = create_tags(specs)
+    tags = create_tags(patterns)
     with_keys = _update_with_keys(with_keys, allow_auto_keys=compress_to_list, tags=tags)
     key_formatter = get_key_formatter(key_formatter, tags=tags)
     files = walk(root_dir)
