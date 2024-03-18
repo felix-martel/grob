@@ -110,10 +110,30 @@ class PatternParser:
 
 
 def _create_named_capturing_group(match_obj: Match) -> str:
+    flags = match_obj["flags"] or ""
+    if "d" in flags:
+        content = r"\d"
+    elif "a" in flags:
+        content = "[a-zA-Z0-9]"
+    else:
+        content = "[^/]"
+    if length_constraints := re.search(r"(?P<min_length>\d*):(?P<max_length>\d*)", flags):
+        # Match a (possibly open-ended) range of characters
+        length_constraint = "".join(
+            ["{" + length_constraints["min_length"], ",", length_constraints["max_length"], "}"]
+        )
+    elif length_constraints := re.search(r"(\d+)", flags):
+        # Match a fixed number of characters
+        length_constraint = "{" + length_constraints.group() + "}"
+    else:
+        # Match an arbitrary number of characters
+        length_constraint = "+"
+        if "g" not in flags and "a" not in flags and "d" not in flags:
+            length_constraint += "?"
+    # TODO: raise error on invalid flags
     name = match_obj["placeholder"]
-    modifier = "" if match_obj["greedy"] else "?"
     optional = match_obj["optional"]
-    return f"(?P<{name}>[^/]+{modifier}){optional}"
+    return f"(?P<{name}>{content}{length_constraint}){optional}"
 
 
 def _convert_pattern_to_regex(pattern: str) -> Pattern:
@@ -128,10 +148,12 @@ def _convert_pattern_to_regex(pattern: str) -> Pattern:
     for before, after in option_groups:
         pattern = pattern.replace(before, after)
     pattern = re.sub(r"(/)?\\\*\\\*(?(1)/?|/)", r"\1([^/]+/)*", pattern)
-    pattern = pattern.replace(r"\*", "[^/]+")
+    pattern = pattern.replace(r"\*", "[^/]*")
     # Replace placeholders {name} by named capturing group (P<name>...)
     pattern = re.sub(
-        r"\\{(?P<placeholder>[a-zA-Z_]\w*)(?P<greedy>!g)?\\}(?P<optional>\??)", _create_named_capturing_group, pattern
+        r"\\{(?P<placeholder>[a-zA-Z_]\w*)(?P<flags>![adg:0-9]+)?\\}(?P<optional>\??)",
+        _create_named_capturing_group,
+        pattern,
     )
     pattern += "$"
     regex = pattern

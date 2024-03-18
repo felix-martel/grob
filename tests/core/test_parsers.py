@@ -31,6 +31,15 @@ from grob.core.parsers import PatternParser
         pytest.param(
             "foo/{artist}-{album!g}/tracks.json", "foo/a-a-a-a/tracks.json", {"artist": "a", "album": "a-a-a"}
         ),
+        pytest.param("The Wire {season!3}{episode!3}", "The Wire S01E02", {"season": "S01", "episode": "E02"}),
+        pytest.param(
+            "The Wire *{season!d2}*{episode!d2}*", "The Wire Season 01 Episode 02", {"season": "01", "episode": "02"}
+        ),
+        pytest.param("*{id!a5:8}*", "abcde", {"id": "abcde"}),
+        pytest.param("*{id!a5:8}*", "abcde-fg", {"id": "abcde"}),
+        pytest.param("{name!a}*.(jpg|png|gif)", "foo.jpg", {"name": "foo"}),
+        pytest.param("{name!a}*.(jpg|png|gif)", "foo-bar.png", {"name": "foo"}),
+        pytest.param("{name!a}*.(jpg|png|gif)", "foo123_bar.gif", {"name": "foo123"}),
     ],
 )
 def test_path_parser(pattern, path, expected_result):
