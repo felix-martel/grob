@@ -1,10 +1,10 @@
-from typing import Any, Callable, List, Protocol, Union, cast
-
-from typing_extensions import Self
+from typing import Any, Callable, List, Protocol, Type, TypeVar, Union, cast
 
 from grob.core.parsers import MultiPartKey
 from grob.core.tags import Tag
 from grob.types import GroupKey, KeyPart
+
+Self = TypeVar("Self", bound="FstringFormatter")
 
 
 class KeyFormatter(Protocol):
@@ -23,7 +23,7 @@ class FstringFormatter:
         return isinstance(other, FstringFormatter) and self.format_string == other.format_string
 
     @classmethod
-    def from_parts(cls, key_parts: List[KeyPart], sep: str = "_") -> Self:
+    def from_parts(cls: Type[Self], key_parts: List[KeyPart], sep: str = "_") -> Self:
         return cls(sep.join("{" + key_part + "}" for key_part in key_parts))
 
     def __repr__(self) -> str:
