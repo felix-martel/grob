@@ -90,7 +90,7 @@ class PatternParser:
             self.regex = pattern
         elif pattern.endswith(REGEX_FLAG):
             self.pattern = None
-            self.regex = re.compile(pattern.removesuffix(REGEX_FLAG))
+            self.regex = re.compile(pattern[-len(REGEX_FLAG) :])
         else:
             self.pattern = pattern
             self.regex = _convert_pattern_to_regex(pattern)
