@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "grob"
-version = "0.0.1"
+version = "0.2.0"
 description = "Group files together in a breeze with glob-like patterns"
 authors = ["Félix Martel <ffelix.martel@polytechnique.edu>"]
 repository = "https://github.com/felix-martel/grob"
