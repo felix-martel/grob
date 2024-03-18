@@ -2,48 +2,131 @@
 
 [![Release](https://img.shields.io/github/v/release/felix-martel/grob)](https://img.shields.io/github/v/release/felix-martel/grob)
 [![Build status](https://img.shields.io/github/actions/workflow/status/felix-martel/grob/main.yml?branch=main)](https://github.com/felix-martel/grob/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/felix-martel/grob/branch/main/graph/badge.svg)](https://codecov.io/gh/felix-martel/grob)
 [![Commit activity](https://img.shields.io/github/commit-activity/m/felix-martel/grob)](https://img.shields.io/github/commit-activity/m/felix-martel/grob)
 [![License](https://img.shields.io/github/license/felix-martel/grob)](https://img.shields.io/github/license/felix-martel/grob)
 
-Group files together in a breeze with glob-like patterns
+Group files together in a flexible way using glob-like patterns.
 
-- **Github repository**: <https://github.com/felix-martel/grob/>
-- **Documentation** <https://felix-martel.github.io/grob/>
-
-## Getting started with your project
-
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
-
-```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:felix-martel/grob.git
-git push -u origin main
+```shell
+pip install grob
 ```
 
-Finally, install the environment and the pre-commit hooks with
+In its simplest form, `grob` simply lists all files in a directory:
+
+```shell
+~ grob "*" .
+[
+  "examples/one_tag_same_dir/root/image_001.png",
+  "examples/one_tag_same_dir/root/image_002.jpg",
+  "examples/one_tag_same_dir/root/image_003.gif"
+]
+```
+
+given the following directory content:
+
+```shell
+root
+├── image_001.png
+├── image_002.jpg
+└── image_003.gif
+```
+
+However, `grob` is mainly useful to group different files together. Let's say you have images and corresponding JSON description for each image:
+
+```shell
+root
+├── image_1.png
+├── image_2.png
+├── image_3.png
+├── labels_1.json
+├── labels_2.json
+└── labels_3.json
+```
+
+```shell
+~ grob "image=image_{id}.png,labels=labels_{id}.json" .
+{
+    "1": {"image": "image_1.png", "labels": "labels_1.json"},
+    "2": {"image": "image_2.png", "labels": "labels_2.json"},
+    "3": {"image": "image_3.png", "labels": "labels_3.json"}
+}
+```
+
+Now imagine each group of inputs is stored in the same subdirectory:
+
+```shell
+root
+├── group_a
+│   ├── image.png
+│   └── labels.json
+├── group_b
+│   ├── image.png
+│   └── labels.json
+├── group_c
+│   ├── image.png
+│   └── labels.json
+└── group_d
+    ├── image.png
+    └── labels.json
+```
+
+We just need to update our pattern:
+
+```shell
+~ grob "image=group_{name}/*.png,labels=group_{name}/*.json" .
+{
+    "a": {"image": "group_a/image.png", "labels": "group_a/labels.json"},
+    "b": {"image": "group_b/image.png", "labels": "group_b/labels.json"},
+    "c": {"image": "group_c/image.png", "labels": "group_c/labels.json"},
+    "d": {"image": "group_d/image.png", "labels": "group_d/labels.json"}
+}
+```
+
+What if each type of file lives in its own directory?
+
+```shell
+root
+├── images
+│   ├── fifi.gif
+│   ├── loulou.png
+│   └── riri.jpg
+└── labels
+    ├── fifi.json
+    ├── loulou.json
+    └── riri.json
+```
+
+```shell
+~ grob "image=images/{name}.*,labels={name}.json" .
+{
+    "riri": {"image": "images/riri.jpg", "labels": "labels/riri.json"},
+    "fifi": {"image": "images/fifi.gif", "labels": "labels/fifi.json"},
+    "loulou": {"image": "images/loulou.png", "labels": "labels/loulou.json"}
+}
+```
+
+See more in the [Examples](./examples/README.md) section, or check `tests/examples/`.
+
+## Contribute
+
+Install the environment and the pre-commit hooks with
 
 ```bash
 make install
 ```
 
-You are now ready to start development on your project!
-The CI/CD pipeline will be triggered when you open a pull request, merge to main, or when you create a new release.
+Run tests:
 
-To finalize the set-up for publishing to PyPi or Artifactory, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/publishing/#set-up-for-pypi).
-For activating the automatic documentation with MkDocs, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/mkdocs/#enabling-the-documentation-on-github).
-To enable the code coverage reports, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/codecov/).
+```shell
+make tests
+# Alternatively, you can directly run `pytest`
+```
 
-## Releasing a new version
+Run code quality tools:
 
-- Create an API Token on [Pypi](https://pypi.org/).
-- Add the API Token to your projects secrets with the name `PYPI_TOKEN` by visiting [this page](https://github.com/felix-martel/grob/settings/secrets/actions/new).
-- Create a [new release](https://github.com/felix-martel/grob/releases/new) on Github.
-- Create a new tag in the form `*.*.*`.
-
-For more details, see [here](https://fpgmaas.github.io/cookiecutter-poetry/features/cicd/#how-to-trigger-a-release).
+```shell
+make check
+```
 
 ---
 
