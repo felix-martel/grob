@@ -3,6 +3,8 @@ from functools import partial
 
 import pytest
 
+from grob.core.errors import AmbiguousTagError
+
 from .conftest import get_example_dir, run_example
 
 run = partial(run_example, example_name="one_input_per_dir")
@@ -28,7 +30,7 @@ def cloned_example_dir(tmp_path):
 def test_with_ambiguous_pattern(cloned_example_dir):
     (cloned_example_dir / "group_a" / "metadata.json").touch()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(AmbiguousTagError):
         run("image=group_{name}/*.png,labels=group_{name}/*.json", example_dir=cloned_example_dir)
 
 

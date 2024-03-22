@@ -2,6 +2,7 @@ import dataclasses
 from pathlib import Path
 from typing import Callable, Dict, Iterable, List, Tuple, Union
 
+from grob.core.errors import AmbiguousTagError
 from grob.core.frozendict import frozendict
 from grob.core.parsers import MultiPartKey
 from grob.core.tags import DistributableTag, MultiPartTag, Tag
@@ -23,8 +24,7 @@ class FileCollection:
         elif key not in self.files:
             self.files[key] = file
         else:
-            # TODO: error message
-            raise ValueError(file)
+            raise AmbiguousTagError(file, self.files[key], key=key, tag_name=self.tag.name)  # type: ignore[arg-type]
         return True
 
 

@@ -87,6 +87,7 @@ ignore = [
     "E501",
     # DoNotAssignLambda
     "E731",
+    # Avoid
 ]
 
 [tool.ruff.format]

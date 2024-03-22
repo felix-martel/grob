@@ -1,5 +1,6 @@
 from typing import Any, Callable, List, Protocol, Type, TypeVar, Union, cast
 
+from grob.core.errors import InvalidKeyFormatterError
 from grob.core.parsers import MultiPartKey
 from grob.core.tags import Tag
 from grob.types import GroupKey, KeyPart
@@ -38,8 +39,7 @@ def get_key_formatter(
     elif isinstance(key_formatter, str):
         return FstringFormatter(key_formatter)
     elif not callable(key_formatter):
-        # TODO: error message
-        raise TypeError(key_formatter)
+        raise InvalidKeyFormatterError(key_formatter)
     else:
         return cast(KeyFormatter, key_formatter)
 

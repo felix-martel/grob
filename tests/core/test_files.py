@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from grob.core import errors
 from grob.core.files import FileCollection, find_by_tag, group_by_key
 from grob.core.frozendict import frozendict
 from grob.core.key_formatters import FstringFormatter
@@ -28,7 +29,7 @@ def test_find_by_tag():
 
 
 def test_find_by_tag_with_invalid_multiple():
-    with pytest.raises(ValueError):
+    with pytest.raises(errors.AmbiguousTagError):
         find_by_tag(
             ["1/2_3", "1/2_4", "1/2_5", "1/3_4"],
             [

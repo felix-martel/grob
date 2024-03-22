@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Match, Optional, Pattern, Protocol, Union
 
+from grob.core.errors import InvalidFlagError
 from grob.core.frozendict import frozendict
 from grob.types import GroupKey, KeyPart
 
@@ -130,7 +131,9 @@ def _create_named_capturing_group(match_obj: Match) -> str:
         length_constraint = "+"
         if "g" not in flags and "a" not in flags and "d" not in flags:
             length_constraint += "?"
-    # TODO: raise error on invalid flags
+    unrecognized_flags = re.sub(r"[agd!\d]", "", re.sub(r"(\d*)?:(\d*)?", "", flags))
+    if unrecognized_flags:
+        raise InvalidFlagError(flags, match_obj.string)
     name = match_obj["placeholder"]
     optional = match_obj["optional"]
     return f"(?P<{name}>{content}{length_constraint}){optional}"
