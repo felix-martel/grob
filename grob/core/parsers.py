@@ -8,7 +8,7 @@ from grob.types import GroupKey, KeyPart
 
 # TODO: replace this by a protocol (a union of `Mapping` and `Hashable`)
 MultiPartKey = frozendict[KeyPart, str]
-REGEX_FLAG: str = "!r"
+REGEX_FLAG: str = ":r"
 
 
 class SinglePartParserProtocol(Protocol):
@@ -118,20 +118,27 @@ def _create_named_capturing_group(match_obj: Match) -> str:
         content = "[a-zA-Z0-9]"
     else:
         content = "[^/]"
-    if length_constraints := re.search(r"(?P<min_length>\d*):(?P<max_length>\d*)", flags):
+    if length_constraints := re.search(r"(?P<min_length>\d+)\\-(?P<max_length>\d+)", flags):
         # Match a (possibly open-ended) range of characters
         length_constraint = "".join(
             ["{" + length_constraints["min_length"], ",", length_constraints["max_length"], "}"]
         )
-    elif length_constraints := re.search(r"(\d+)", flags):
-        # Match a fixed number of characters
-        length_constraint = "{" + length_constraints.group() + "}"
+    elif length_constraints := re.search(r"(?P<constraint>[><])?(?P<number>\d+)", flags):
+        constraint = length_constraints["constraint"]
+        number = length_constraints["number"]
+        if constraint == ">":
+            length_constraint = f"{{{number},}}"
+        elif constraint == "<":
+            length_constraint = f"{{,{number}}}"
+        else:
+            # Match a fixed number of characters
+            length_constraint = f"{{{number}}}"
     else:
         # Match an arbitrary number of characters
         length_constraint = "+"
         if "g" not in flags and "a" not in flags and "d" not in flags:
             length_constraint += "?"
-    unrecognized_flags = re.sub(r"[agd!\d]", "", re.sub(r"(\d*)?:(\d*)?", "", flags))
+    unrecognized_flags = re.sub(r"[-agd<>\\:\d]", "", re.sub(r"(\d*)?-(\d*)?", "", flags))
     if unrecognized_flags:
         raise InvalidFlagError(flags, match_obj.string)
     name = match_obj["placeholder"]
@@ -154,7 +161,7 @@ def _convert_pattern_to_regex(pattern: str) -> Pattern:
     pattern = pattern.replace(r"\*", "[^/]*")
     # Replace placeholders {name} by named capturing group (P<name>...)
     pattern = re.sub(
-        r"\\{(?P<placeholder>[a-zA-Z_]\w*)(?P<flags>![adg:0-9]+)?\\}(?P<optional>\??)",
+        r"\\{(?P<placeholder>[a-zA-Z_]\w*)(?P<flags>:[^}]+)?\\}(?P<optional>\??)",
         _create_named_capturing_group,
         pattern,
     )

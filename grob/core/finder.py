@@ -13,7 +13,7 @@ from grob.types import GroupKey, TagSpec
 
 def find(
     patterns: Union[TagSpec, Dict[str, TagSpec]],
-    root_dir: Path,
+    root_dir: Union[str, Path],
     key_formatter: Union[str, Callable[[MultiPartKey], GroupKey], None] = None,
     use_relative_paths: bool = False,
     squeeze: bool = True,
@@ -60,6 +60,7 @@ def find(
     Returns:
         files matching `patterns`, grouped by common keys and tags
     """
+    root_dir = Path(root_dir)
     root_dir = root_dir.resolve()
     tags = create_tags(patterns)
     with_keys = _update_with_keys(with_keys, allow_auto_keys=compress_to_list, tags=tags)

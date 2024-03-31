@@ -55,7 +55,7 @@ def test_create_tag_with_compiled_regex():
 
 
 def test_create_tag_with_regex():
-    (tag1,) = create_tags("(?P<foo>.*)!r")
+    (tag1,) = create_tags("(?P<foo>.*):r")
     assert tag1.parser == PatternParser(re.compile("(?P<foo>.*)"))
 
 
