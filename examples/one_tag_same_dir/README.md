@@ -17,7 +17,7 @@ examples/one_tag_same_dir/root
 Command:
 
 ```
-grob "*" examples/one_tag_same_dir/root --relative
+grob "*" examples/one_tag_same_dir/root
 ```
 
 Result:

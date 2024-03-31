@@ -220,7 +220,7 @@ def create_parser() -> Callable[..., argparse.Namespace]:
         help="Return only the file groups, not their keys.",
     )
     parser.add_argument("--help", action="help", help="Show this help message and exit")
-    parser.set_defaults(with_keys=None)
+    parser.set_defaults(with_keys=None, use_relative_path=True)
 
     def parse_arguments(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
         parsed_args = parser.parse_args(args=args)

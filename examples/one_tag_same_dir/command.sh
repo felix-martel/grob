@@ -1,1 +1,1 @@
-grob "*" examples/one_tag_same_dir/root --relative
+grob "*" examples/one_tag_same_dir/root
