@@ -1,0 +1,22 @@
+{
+    "clubs": {
+        "image": "clubs/img.png",
+        "meta": null,
+        "legend": "clubs/legend.txt"
+    },
+    "diamonds": {
+        "image": "diamonds/img.png",
+        "meta": "diamonds/metadata.json",
+        "legend": null
+    },
+    "hearts": {
+        "image": null,
+        "meta": "hearts/metadata.json",
+        "legend": "hearts/legend.txt"
+    },
+    "spades": {
+        "image": "spades/img.png",
+        "meta": null,
+        "legend": "spades/legend.txt"
+    }
+}

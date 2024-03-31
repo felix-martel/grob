@@ -1,0 +1,2 @@
+In this example, we want to group images and labels together.
+Corresponding files have the same stem, but have different extensions and are located in different directories.

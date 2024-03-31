@@ -1,0 +1,14 @@
+{
+    "1": {
+        "image": "img1.png",
+        "labels": "labels.csv"
+    },
+    "2": {
+        "image": "img2.png",
+        "labels": "labels.csv"
+    },
+    "3": {
+        "image": "img3.png",
+        "labels": "labels.csv"
+    }
+}

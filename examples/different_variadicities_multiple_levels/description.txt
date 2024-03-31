@@ -1,0 +1,4 @@
+Here, we want to map each `toss-*.txt` file to the corresponding label file: if toss was a `head`, we want to group it
+with `heads/labels.txt`, otherwise with `tails/labels.txt`.
+
+This can be achieved with the following command:

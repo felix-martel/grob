@@ -1,0 +1,3 @@
+In this case, each group has multiple images (possibly zero), as well as one or mutiple textual descriptions.
+
+Here's how to achieve this:

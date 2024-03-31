@@ -1,0 +1,3 @@
+Note that we don't have to specify any custom option to `grob`: when parsing the patterns, `grob` understand that tag
+`labels` has no `{index}` part, and will thus match image and label files on all parts except `index`. To better
+understand this, head to the [next example](./different_variadicities_multiple_levels/README.md).

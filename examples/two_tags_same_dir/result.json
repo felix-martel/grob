@@ -1,0 +1,14 @@
+{
+    "1": {
+        "image": "image_1.png",
+        "labels": "labels_1.json"
+    },
+    "2": {
+        "image": "image_2.png",
+        "labels": "labels_2.json"
+    },
+    "3": {
+        "image": "image_3.png",
+        "labels": "labels_3.json"
+    }
+}

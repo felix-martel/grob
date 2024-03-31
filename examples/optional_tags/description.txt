@@ -1,0 +1,2 @@
+We have four groups of files: clubs, diamonds, hearts and spades. Each group can contain
+any of an image, a textual legend and a metadata file. All these files are optional.

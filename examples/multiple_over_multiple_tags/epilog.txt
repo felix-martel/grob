@@ -1,0 +1,7 @@
+`--multiple all` indicates that both tags `image` and `descr` accept multiple files. Without this option, the command
+would fail, as the same key would be mapped to different files.
+
+`--optional image` indicate that tag `image` is optional, allowing for group `c_b` to be kept even thoug it does not
+have an image. Alternatively, one could use `--remove-on-missing` to remove groups without images from the final output.
+Without any flag, the default is `--fail-on-missing all`, meaning that the command will fail if any of the tags is
+absent.

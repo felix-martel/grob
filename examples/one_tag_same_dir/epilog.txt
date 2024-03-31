@@ -1,0 +1,6 @@
+Additional things to note:
+
+- since the pattern doesn't contain any named placehoder such as `{name}`, `grob` assumes the caller isn't interested in
+the _keys_ of each group, and thus returns a list. This could be disabled by passing `--with-keys`.
+- since the caller did not provide a tag, `grob` returns directly the path of the files, instead of wrapping them into
+a dictionary. This could be disabled by passing `--no-squeeze`.

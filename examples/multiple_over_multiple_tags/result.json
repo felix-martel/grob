@@ -1,0 +1,19 @@
+{
+    "a_a": {
+        "image": ["a_a/img_1.png", "a_a/img_3.png", "a_a/img_7.png"],
+        "descr": ["a_a/left.txt"]
+    },
+    "a_b": {
+        "image": [
+            "a_b/img_1.png",
+            "a_b/img_2.png",
+            "a_b/img_4.png",
+            "a_b/img_5.png"
+        ],
+        "descr": ["a_b/bottom.txt", "a_b/right.txt", "a_b/top.txt"]
+    },
+    "c_b": {
+        "image": [],
+        "descr": ["c_b/left.txt", "c_b/right.txt"]
+    }
+}

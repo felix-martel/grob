@@ -1,0 +1,2 @@
+Here, each image is associated with the same file `labels.csv`. We can _distribute_ this file over multiple keys, so
+that the file is replicated into multiple groups.

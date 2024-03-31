@@ -1,0 +1,1 @@
+In this example, we're only interested into a single type of files (images), but they are scattered into multiple subdirectories.

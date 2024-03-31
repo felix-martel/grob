@@ -1,0 +1,1 @@
+In this example, each group of inputs is placed into its own subdirectory.

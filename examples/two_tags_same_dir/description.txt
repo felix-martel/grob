@@ -1,0 +1,4 @@
+Here, images and labels are all located in the same directory. We want to group them based on
+the index they contain.
+
+Since they have predictable names, we can use the following command:

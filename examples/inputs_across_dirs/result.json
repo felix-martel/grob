@@ -1,0 +1,14 @@
+{
+    "fifi": {
+        "images": "images/fifi.gif",
+        "labels": "labels/fifi.json"
+    },
+    "loulou": {
+        "images": "images/loulou.png",
+        "labels": "labels/loulou.json"
+    },
+    "riri": {
+        "images": "images/riri.jpg",
+        "labels": "labels/riri.json"
+    }
+}

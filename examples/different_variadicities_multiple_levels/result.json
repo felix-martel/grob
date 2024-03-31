@@ -1,0 +1,34 @@
+{
+    "heads_1": {
+        "toss": "heads/toss-1.txt",
+        "labels": "heads/labels.txt"
+    },
+    "heads_2": {
+        "toss": "heads/toss-2.txt",
+        "labels": "heads/labels.txt"
+    },
+    "heads_3": {
+        "toss": "heads/toss-3.txt",
+        "labels": "heads/labels.txt"
+    },
+    "heads_4": {
+        "toss": "heads/toss-4.txt",
+        "labels": "heads/labels.txt"
+    },
+    "tails_2": {
+        "toss": "tails/toss-2.txt",
+        "labels": "tails/labels.txt"
+    },
+    "tails_3": {
+        "toss": "tails/toss-3.txt",
+        "labels": "tails/labels.txt"
+    },
+    "tails_4": {
+        "toss": "tails/toss-4.txt",
+        "labels": "tails/labels.txt"
+    },
+    "tails_5": {
+        "toss": "tails/toss-5.txt",
+        "labels": "tails/labels.txt"
+    }
+}

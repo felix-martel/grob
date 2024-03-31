@@ -10,10 +10,10 @@ examples/optional_tags/root
 │   └── legend.txt
 ├── diamonds
 │   ├── img.png
-│   └── metada.json
+│   └── metadata.json
 ├── hearts
 │   ├── legend.txt
-│   └── metada.json
+│   └── metadata.json
 └── spades
     ├── img.png
     └── legend.txt
