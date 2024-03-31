@@ -73,7 +73,7 @@ from grob.cli.app import create_parser
         (". .", {"key_formatter": None}),
         (". . --absolute", {"use_relative_path": False}),
         (". . --relative", {"use_relative_path": True}),
-        (". .", {"use_relative_path": False}),
+        (". .", {"use_relative_path": True}),
     ],
 )
 def test_create_parser(args, attrs):

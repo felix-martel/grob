@@ -30,7 +30,7 @@ examples/one_tag_different_dirs/root
 Command:
 
 ```
-grob "*" examples/one_tag_different_dirs/root --relative
+grob "*" examples/one_tag_different_dirs/root
 ```
 
 Result:

@@ -29,7 +29,7 @@ examples/different_variadicities_multiple_levels/root
 Command:
 
 ```
-grob "toss={outcome}/toss-{index}.txt, labels={outcome}/labels.txt" examples/different_variadicities_multiple_levels/root --relative
+grob "toss={outcome}/toss-{index}.txt, labels={outcome}/labels.txt" examples/different_variadicities_multiple_levels/root
 ```
 
 Result:
@@ -106,7 +106,7 @@ the same named placeholders.
 Alternatively, in the same situation, you could group toss files together by using `--multiple`:
 
 ```shell
-~ grob "toss={outcome}/toss-*.txt, labels={outcome}/labels.txt" examples/different_variadicities_multiple_levels/root --relative --multiple toss
+~ grob "toss={outcome}/toss-*.txt, labels={outcome}/labels.txt" examples/different_variadicities_multiple_levels/root --multiple toss
 {
   "heads": {
     "toss": [
